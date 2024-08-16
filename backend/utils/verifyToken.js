@@ -2,7 +2,8 @@ const jwt =require('jsonwebtoken');
 const verifyToken = (req,res,next)=>
 {
     // console.log(req.cookies.accessToken)
-    const token = req.cookies.accessToken
+    const token = req.cookies.accessToken;
+    console.log(token,"token in verifyToken");
     if (!token)
     {
         return res.status(401).json({success:false,message:'You are not authorize'})
@@ -13,10 +14,12 @@ const verifyToken = (req,res,next)=>
     {
         if (err)
         {
+            console.log("Not verified...");
             return res.status(401).json({success:false, message:'Token is invalid'})
         }
 
         req.user = user
+        console.log("Verified...");
         next() 
     })
 

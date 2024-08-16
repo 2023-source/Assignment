@@ -5,7 +5,7 @@ import useFetch from '../hooks/useFetch';
 const Principal = () => {
   const [teachers, setTeachers] = useState([]);
   const [students, setStudents] = useState([]);
-  // const [classrooms, setClassrooms] = useState([]);
+  const [classrooms, setClassrooms] = useState([]);
 
 
   const { data: allData, loading, error } = useFetch(`${BASE_URL}/details`);
@@ -32,13 +32,61 @@ const Principal = () => {
     // Delete logic for user (teacher or student)
   };
 
-  const handleCreateClassroom = () => {
-    // Logic to create a new classroom
+  const handleCreateClassroom = async () => {
+    const name = prompt("Enter Classroom Name:");
+  
+    if (name) {
+      try {
+        const response = await fetch(`${BASE_URL}/classrooms/${name}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials:"include",
+          body: JSON.stringify({ name })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('Classroom created successfully');
+          // Optionally, you can update the UI with the new classroom data
+        } else {
+          alert('Failed to create classroom');
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        alert('Error creating classroom');
+      }
+    }
   };
 
-  const handleAssignClassroom = (teacherId, classroomId) => {
-    // Logic to assign a classroom to a teacher
-  };
+  const handleAssignClassroom = async (teacherId) => {
+    const classroomName = prompt("Enter Classroom Name to Assign:");
+    if (classroomName) {
+        try {
+            const response = await fetch(`${BASE_URL}/classrooms/${classroomName}/assignTeacher`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials:"include",
+                body: JSON.stringify({ teacherId })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('Teacher assigned to classroom successfully');
+            } else {
+                alert(data.message || 'Failed to assign teacher');
+            }
+        } catch (err) {
+            console.error('Error:', err);
+            alert('Error assigning teacher to classroom');
+        }
+    }
+};
 
   return (
     <div>

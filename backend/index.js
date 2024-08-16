@@ -1,8 +1,8 @@
-const  express = require('express')
-const  dotenv = require ('dotenv')
-const  mongoose = require ('mongoose')
-const  cors = require('cors')
-const  cookieParser = require ('cookie-parser')
+const  express = require('express');
+const  dotenv = require ('dotenv');
+const  mongoose = require ('mongoose');
+const  cors = require('cors');
+const  cookieParser = require ('cookie-parser');
 const  authRoute = require ('./routes/auth.js')
 const  detailRoute = require('./routes/details.js')
 const  classroomRoute = require ('./routes/classroom.js')

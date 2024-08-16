@@ -49,6 +49,7 @@ const login = async(req,res)=>
         }
 
         const {password, role, ...rest} = user._doc;
+        console.log(user._doc.role)
 
         // create jwt token
 
@@ -63,7 +64,7 @@ const login = async(req,res)=>
 
 
     } catch (error) {
-        console.log(error)
+        // console.log(error)
         res.status(500).json({success: false, message:'Failed to login'})
     }
 }

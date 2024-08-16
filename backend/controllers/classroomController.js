@@ -2,8 +2,8 @@ const Classroom = require('../models/Classroom');
 const User = require('../models/User');
 
 const createClassroom = async (req, res) => {
-    const { name } = req.body;
-
+    const name = req.params.name;
+    console.log(name);
     try
     {
         const classroom = await Classroom.create({ name });
@@ -11,21 +11,29 @@ const createClassroom = async (req, res) => {
     }
 
     catch {
-        res.status(404).json({success:false, message:'not found. Try again'})
+        res.status(404).json({success:false, message:'Cannot create'})
     }
 };
 
 const assignTeacher = async (req, res) => {
     const { teacherId } = req.body;
-    const classroom = await Classroom.findById(req.params.id);
+    try {
+        const classroom = await Classroom.findOne({ name: req.params.name });
 
-    if (classroom) {
+        if (!classroom) {
+            return res.status(404).json({ success: false, message: 'Classroom not found' });
+        }
+
+        if (classroom.teacher) {
+            return res.status(400).json({ success: false, message: 'This classroom already has a teacher assigned' });
+        }
+
         classroom.teacher = teacherId;
         await classroom.save();
-        res.json(classroom);
-    } else {
-        res.status(404);
-        throw new Error('Classroom not found');
+        res.json({ success: true, message: 'Teacher assigned successfully', data: classroom });
+
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Server error', error: err.message });
     }
 };
 

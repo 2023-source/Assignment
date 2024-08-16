@@ -35,12 +35,12 @@ const getAllUsers = async(req,res)=>
             const users = await User.find({});
     
             res.status(200).json({success:true, message:'Successfully added all', data:users})
-            console.log(users);
+            // console.log(users);
     
         } catch (err) {
     
             res.status(404).json({success:false, message:'not found. Try again'})
-            console.log("Not found");
+            // console.log("Not found");
         }
     }
 
