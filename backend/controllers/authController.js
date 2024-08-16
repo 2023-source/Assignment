@@ -1,54 +1,72 @@
-const User = require('../models/User');
-const generateToken = require('../utils/generateToken');
+const User = require("../models/User.js")
+const bcrypt = require('bcryptjs')
+const jwt = require("jsonwebtoken")
 
-const login = async (req, res) => {
-    const { email, password } = req.body;
-    console.log(email,password)
-    // console.log(User);
-    console.log(User.find());
-    const user = await User.findOne({ email });
-    // console.log(user);
+const register = async(req,res)=>
+{
+    try {
+        
+        const salt = bcrypt.genSaltSync(10)
+        const hash = bcrypt.hashSync(req.body.password, salt)
 
-    if (user && (await user.matchPassword(password))) {
-        res.json({
-            _id: user._id,
-            email: user.email,
-            role: user.role,
-            token: generateToken(user._id),
-        });
-    } else {
-        res.status(401);
-        throw new Error('Invalid email or password');
+        const newUser = new User({
+            username: req.body.username,
+            email: req.body.email,
+            password: hash,
+            photo: req.body.photo
+        })
+
+        await newUser.save()
+
+        res.status(200).json({success: true, message: "Successfully created"});
+
+    } catch (error) {
+        
+        res.status(500).json({success: false, message: "Failed to create. Try again"})
     }
-};
+}
 
-const createUser = async (req, res) => {
-    const { email, password, role } = req.body;
 
-    const userExists = await User.findOne({ email });
+const login = async(req,res)=>
+{
+    const email = req.body.email
+    try {
+        const user = await User.findOne({email})
+        // if user does not exist
+        if (!user)
+        {
+            return res.status(401).json({success:false, message:'User not found'}) 
+        }
+        // if user exist check for password or compare
+        // console.log(req.body.password, user.password)
 
-    if (userExists) {
-        res.status(400);
-        throw new Error('User already exists');
+        const checkCorrectPassword = await bcrypt.compare(req.body.password, user.password)
+
+        // If password incorrect 
+        if(!checkCorrectPassword)
+        {
+            return res.status(401).json({success:false, message:'incorrect email or password'})
+        }
+
+        const {password, role, ...rest} = user._doc;
+
+        // create jwt token
+
+        const token = jwt.sign(
+            {id:user._id, role:user.role},
+            process.env.JWT_SECRET_KEY,
+            {expiresIn:"15d"}
+        )
+
+        // set token in the browser cookies and send the response to the client
+         res.cookie('accessToken',token,{httpOnly:true, expires:token.expiresIn}).status(201).json({token, data:{... rest}, role})
+
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({success: false, message:'Failed to login'})
     }
+}
 
-    const user = await User.create({
-        email,
-        password,
-        role,
-    });
 
-    if (user) {
-        res.status(201).json({
-            _id: user._id,
-            email: user.email,
-            role: user.role,
-            token: generateToken(user._id),
-        });
-    } else {
-        res.status(400);
-        throw new Error('Invalid user data');
-    }
-};
-
-module.exports = { login, createUser };
+module.exports = {login, register}

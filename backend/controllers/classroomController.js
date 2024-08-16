@@ -4,13 +4,14 @@ const User = require('../models/User');
 const createClassroom = async (req, res) => {
     const { name } = req.body;
 
-    const classroom = await Classroom.create({ name });
+    try
+    {
+        const classroom = await Classroom.create({ name });
+        res.status(200).json({success:true, message:'Successfully Created', data: classroom})
+    }
 
-    if (classroom) {
-        res.status(201).json(classroom);
-    } else {
-        res.status(400);
-        throw new Error('Invalid classroom data');
+    catch {
+        res.status(404).json({success:false, message:'not found. Try again'})
     }
 };
 
